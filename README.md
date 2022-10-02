@@ -71,10 +71,125 @@ Output:
 <p align="center">
 <img width="637" alt="Screenshot 2022-10-02 at 12 29 54" src="https://user-images.githubusercontent.com/19373417/193437916-87b905ff-ab38-4ad2-9765-885b079e3e8d.png"></p>  
 
-## 4. Given Functions
+## 4. Given Functions  
+We have the following given functions, which are mainly used in the main function:  
+* <img width="563" alt="Screenshot 2022-10-02 at 13 06 01" src="https://user-images.githubusercontent.com/19373417/193438807-7cbafff7-e244-46bb-a167-571be954cf9f.png">  
+This helps to load the map data from the text file in a better manner. Extra characters in the line will be excluded. And this will also pad with ' ' if the line is less than MAP_WIDTH.
+* <img width="589" alt="Screenshot 2022-10-02 at 13 06 45" src="https://user-images.githubusercontent.com/19373417/193438836-281cc48f-ded0-4973-b53b-61950ee82db9.png">  
+This loads the map data from a text file filename. When the file is not present, the function returns false; else the file is loaded to the program and it returns true.  
+* <img width="649" alt="Screenshot 2022-10-02 at 13 07 16" src="https://user-images.githubusercontent.com/19373417/193438853-7d52cd85-0ea5-479b-aff0-65e3ae1d92cb.png">  
+This copies original_map to target_map.  
+* <img width="306" alt="Screenshot 2022-10-02 at 13 07 40" src="https://user-images.githubusercontent.com/19373417/193438862-8a866d90-a12c-4530-970a-53f1b41308d6.png">  
+This prints the content in map.  
+<img width="90" alt="Screenshot 2022-10-02 at 13 08 20" src="https://user-images.githubusercontent.com/19373417/193438876-25261c18-cb94-4312-b088-f0094ca9c17e.png">  
+* <img width="857" alt="Screenshot 2022-10-02 at 13 09 13" src="https://user-images.githubusercontent.com/19373417/193438907-70d55086-0eee-42e0-92c6-30eab6d6e0a3.png">  
+This sets the position and the battery capacity of the robot.  
+<img width="394" alt="Screenshot 2022-10-02 at 13 10 16" src="https://user-images.githubusercontent.com/19373417/193438928-f0337fb0-6cc4-4dfe-b4ac-3f7072d039f6.png">  
 
+## 5. Functions
+### 5.1 Principle on Searching Directions
+In this assignment, the robot can only search for the surronding blocks clockwisely by the following order: starting in upward direction, then rightward direction, then downward direction, finally leftward direction. That means the order must be:
+  1. Up  
+  2. Right  
+  3. Down  
+  4. Left
+Remember that in this assignment, the robot cannot go in diagonal directions.  
 
+### 5.2 TODO Functions
+Here are the 4 functions that you need to implement for this assignment. They are useful when the robot needs to determine what the next target is and how to go to the next target in an effective way.  
 
+### 5.2.1  
+<img width="622" alt="Screenshot 2022-10-02 at 13 15 55" src="https://user-images.githubusercontent.com/19373417/193439076-e4de7372-3ca8-4851-aabb-46e520bdb301.png">  
+This recursive function finds the maximum area that the robot may visit with its battery fully used, and max mark the area in the result_map. Also, it returns the number of positions that can be VISITED by the robot.  
+This function will see if the robot can reach a particular position. If yes, the function should change the character at this position to 'V' to indicate that it can be VISITED. Then, the function will try to further determine if the robot can move (visit) from here, via recursive calls of the same function, to the neighboring positions in the 4 directions: up, right, down, left.  
+Every move of the robot will consume 1 unit of energy from robot_energy, but if the robot
+reaches to a charger, the robot_enery should be resumed to robot_full_energy.  
+We keep doing that until the robot can no longer move based on the energy stored in the robot.  
+
+For example:  
+  * If the robot (5, 5) has 3 energy units remaining when this function is first called, the result_map will be this (To make it more clear, the 'V' in the illustration has been highlighted with red):  
+    * <img width="96" alt="Screenshot 2022-10-02 at 13 17 30" src="https://user-images.githubusercontent.com/19373417/193439111-e9438cf9-7ed2-4a7c-8faa-7226b8c52eeb.png"> 
+    * And the function returns 21, which means these 21 positions may be reached by the robot.
+  * If the robot (5, 5) has 4 energy units remaining when this function is first called, the result_map will be this:
+    * <img width="96" alt="Screenshot 2022-10-02 at 13 18 42" src="https://user-images.githubusercontent.com/19373417/193439148-dcb1d254-791d-48ec-b5fa-48bd0f381f47.png">
+    * And it return 58  
+You can see that when the robot reaches a charger, the robot gets charged up, and thus, more positions can be visited by the robot.  
+
+### 5.2.2  
+<img width="617" alt="Screenshot 2022-10-02 at 13 19 47" src="https://user-images.githubusercontent.com/19373417/193439180-e6dfa4ad-07c7-4ff8-8f8b-76e7158747f8.png">    
+This recursive function finds the shortest distance from the current robot position (robot_x, robot_y) to the target position (target_x, target_y), based on the constraints of energy, chargers and blocked areas. If the robot cannot go there within the robot_energy, it returns the constant MAX_PATH PA2_MAX_PATH (Updated: Oct 24 12:50pm) and that indicates that the specified position is unreachable. But note that the robot will get fully charged again when it reaches a charger (i.e. robot_energy will be resumed to the value of robot_full_energy).  
+For Task 2, we will do a max battery cap as 5. (robot_full_energy will not greater than 5 for Task 2, Task 3 and Task 4)  
+For example: If the robot has 5 units of energy, and using the map,  
+<img width="83" alt="Screenshot 2022-10-02 at 13 21 13" src="https://user-images.githubusercontent.com/19373417/193439224-ee173e04-35ae-4220-ba13-fb6ef6753aa0.png">  
+  * If the target is (5, 5) (that means the same with the robot), the return value is 1.
+  * If the target is (5, 6), the return value is 2.
+  * If the target is (6, 6), the return value is 3.
+  * If the target is (6, 7), the return value is 4.
+  * If the target is (7, 5), the return value is 3.
+  * If the target is (3, 3), the return value is 5.
+  * If the target is (5, 3), the return value is 5.
+  * If the target is (2, 4), the return value is MAX_PATH PA2_MAX_PATH, that means it is unreachable (as it is BLOCKED).
+  * If the target is (5, 9), the return value is 7, as to go there, the robot has to use the charger in (4, 9).
+  *If the target is (3, 11), the return value is 11, as to go there, the robot has to use the charger in (4, 9).  
+
+For example: If the robot has 5 units of energy, and using the map,  
+<img width="83" alt="Screenshot 2022-10-02 at 13 22 55" src="https://user-images.githubusercontent.com/19373417/193439272-9820f8a3-3a3e-4b3c-b530-14d10c43d8cd.png">  
+
+  * If the target is (5, 5), the return value is 2.
+  * If the target is (5, 6) (that means the same with the robot), the return value is 1.
+  * If the target is (6, 6), the return value is 2.
+  * If the target is (6, 7), the return value is 3.
+  * If the target is (3, 3), the return value is 6.
+  * If the target is (5, 3), the return value is 6.
+  * If the target is (2, 4), the return value is MAX_PATH PA2_MAX_PATH, that means it is unreachable (as it is BLOCKED).
+  * If the target is (5, 9), the return value is 6, as to go there, the robot has to use the charger in (4, 9).
+  * If the target is (3, 11), the return value is 10, as to go there, the robot has to use the charger in (4,9).
+  
+### 5.2.3  
+<img width="592" alt="Screenshot 2022-10-02 at 13 24 10" src="https://user-images.githubusercontent.com/19373417/193439311-cebe1037-f95b-4d26-b5c4-5a74bcf4c7ad.png">  
+This recursive function finds the sequence of moves which gives the shortest distance from the current robot position (robot_x, robot_y) to the target position (target_x, target_y), based on the constraints of energy, chargers and blocked areas. If the robot cannot go there within the robot_energy, it returns the constant PA2_MAX_PATH  and that indicates that position is unreachable. But note that the robot will get fully charged again when it reaches a charger (i.e. robot_energy will be resumed to the value of robot_full_energy).  
+Remember that result_sequence has to be C-String. That means it should be null-terminated. For Task 3, we will do a max battery cap as 5. (robot_full_energy will not greater than 5 for Task 2, Task 3 and Task 4)  
+For example: If the robot has 5 unit of energy, and using the map,  
+<img width="86" alt="Screenshot 2022-10-02 at 13 25 55" src="https://user-images.githubusercontent.com/19373417/193439376-fc943605-f127-493b-a134-e53bb764bbdf.png">  
+  * If the target is (5, 5) (that means the same with the robot), the return value is 1, and the variable result_sequence is T.
+  * If the target is (5, 6), the return value is 2, and the variable result_sequence is DT.
+  * If the target is (6, 6), the return value is 3, and the variable result_sequence is RDT.
+  * If the target is (6, 7), the return value is 4, and the variable result_sequence is RDDT.
+  * If the target is (3, 3), the return value is 5, and the variable result_sequence is LUULT.
+  * If the target is (5, 3), the return value is 5, and the variable result_sequence is RUULT.
+  * If the target is (2, 4), the return value is PA2_MAX_PATH, that means it is unreachable (as it is BLOCKED).
+  * If the target is (5, 9), the return value is 7, and the variable result_sequence is DDLDDRT.
+  * If the target is (3, 11), the return value is 11, and the variable result_sequence is DDLDDRDDLLT.
+  
+For example: If the robot has 5 unit of energy, and using the map,  
+<img width="86" alt="Screenshot 2022-10-02 at 13 27 30" src="https://user-images.githubusercontent.com/19373417/193439418-ef56a3fd-6f19-4f11-b388-5fca5983fdd5.png">  
+  * If the target is (5, 5) , the return value is 2, and the variable
+result_sequence is UT.
+  * If the target is (5, 6) (that means the same with the robot), the return value is 1, and the variable result_sequence is T.
+  * If the target is (6, 6), the return value is 2, and the variable result_sequence is RT.
+  * If the target is (6, 7), the return value is 3, and the variable result_sequence is RDT.
+  * If the target is (3, 3), the return value is 6, and the variable result_sequence is ULUULT.
+  * If the target is (5, 3), the return value is 6, and the variable result_sequence is URUULT.
+  * If the target is (2, 4), the return value is PA2_MAX_PATH, that means it is unreachable (as it is BLOCKED).
+  * If the target is (5, 9), the return value is 6, and the variable result_sequence is DLDDRT.
+  * If the target is (3, 11), the return value is 10, and the variable result_sequence is DLDDRDDLLT.  
+  
+## 5.2.4  
+<img width="628" alt="Screenshot 2022-10-02 at 13 29 35" src="https://user-images.githubusercontent.com/19373417/193439484-21f299f6-a616-4cf4-9c62-6ae982a87011.png">  
+The function will scan through the walkable area and then determine whether there is any position that matches with a charger.  
+If there is at least one charger, then the farthest position will be returned by the reference variables target_x and target_y, together with returning the shortest distance between the robot's original position to that position.  
+When a charger is not found or none of the chargers can be reached by the robot under the energy constraint, the function returns -1 and we do not care about the value of target_x and target_y.  
+If there are different results for considering the 're-charge' case and 'non-recharge' case, both of them will be treated as correct. If there is a discrepency among 'recharge' case and 'non-recharge' case occurs on that test-case and you can produce one of the 2 outputs, then you will get the score on that test case.  
+For Task 4, we will do a max battery cap as 5. (robot_full_energy will not greater than 5 for Task 2, Task 3 and Task 4)  
+
+For example: If the robot has 5 units of energy, and using the map,  
+<img width="84" alt="Screenshot 2022-10-02 at 13 30 56" src="https://user-images.githubusercontent.com/19373417/193439522-c850fd6d-0ba6-4589-8339-b366d238ca5b.png">  
+  * The farthest charger from Point X (5, 5) is Charger (4, 9) and the distance is 6
+  * The farthest charger from Point Y (5, 6) is Charger (4, 9) and the distance is 5 
+  * The farthest charger from Point Z (4, 5) is Charger (7, 7) and the distance is 6 
+    * It is not Charger (4, 9) as distance between Point Z (4, 5) to Charger (7,7) and that between Point Z (4, 5) to Charger (4, 9) are the same. But in this function, the first point found will be returned.  
+    
+Remember that you can make good use of your previous implemented functions to finish this task.
 
 
 Disclaimer: This is a university project about how to solve an **Auto Cleaning Machine** problem with **recursion**, using C++ as required. The description of the problem comes from the Internet and school. However, the coding part is 100% original and I highly value the academic integrity.
